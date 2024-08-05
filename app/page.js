@@ -9,6 +9,9 @@ import {
   Modal,
   TextField,
 } from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
+import AddCircleIcon from "@mui/icons-material/AddCircle";
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import { firestore } from "@/firebase";
 import {
   collection,
@@ -33,6 +36,7 @@ const style = {
   display: "flex",
   flexDirection: "column",
   gap: 3,
+  borderRadius: "16px",
 };
 /* if inventory doesn't work, then use pantry */
 export default function Home() {
@@ -75,6 +79,16 @@ export default function Home() {
       } else {
         await setDoc(docRef, { quantity: quantity - 1 });
       }
+    }
+    await updateInventory();
+  };
+
+  const increaseItem = async (item) => {
+    const docRef = doc(collection(firestore, "inventory"), item);
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      const { quantity } = docSnap.data();
+      await setDoc(docRef, { quantity: quantity + 1 });
     }
     await updateInventory();
   };
@@ -124,17 +138,31 @@ export default function Home() {
           </Stack>
         </Box>
       </Modal>
-      <Button variant="contained" onClick={handleOpen}>
+      <Button
+        variant="contained"
+        onClick={handleOpen}
+        endIcon={<AddCircleIcon />}
+      >
         Add New Item
       </Button>
-      <Box border={"1px solid #333"}>
+      <Box
+        border={"1px solid #333"}
+        sx={{
+          borderRadius: "16px", // Add borderRadius here
+          overflow: "hidden",
+        }}
+      >
         <Box
           width="800px"
           height="100px"
-          bgcolor={"#ADD8E6"}
+          bgcolor={"#9dbdf2"}
           display={"flex"}
           justifyContent={"center"}
           alignItems={"center"}
+          sx={{
+            borderTopLeftRadius: "16px", // Add borderRadius to top corners
+            borderTopRightRadius: "16px",
+          }}
         >
           <Typography variant={"h2"} color={"#333"} textAlign={"center"}>
             Inventory Items
@@ -149,7 +177,7 @@ export default function Home() {
               display={"flex"}
               justifyContent={"space-between"}
               alignItems={"center"}
-              bgcolor={"#f0f0f0"}
+              bgcolor={"#e9f0f5"}
               paddingX={5}
             >
               <Typography variant={"h3"} color={"#333"} textAlign={"center"}>
@@ -158,9 +186,22 @@ export default function Home() {
               <Typography variant={"h3"} color={"#333"} textAlign={"center"}>
                 Quantity: {quantity}
               </Typography>
-              <Button variant="contained" onClick={() => removeItem(name)}>
-                Remove
-              </Button>
+              <Stack direction="row" spacing={1}>
+                <Button
+                  variant="contained"
+                  onClick={() => removeItem(name)}
+                  endIcon={<DeleteIcon />}
+                >
+                  Remove
+                </Button>
+                <Button
+                  variant="contained"
+                  onClick={() => increaseItem(name)}
+                  endIcon={<AddCircleIcon />}
+                >
+                  Add
+                </Button>
+              </Stack>
             </Box>
           ))}
         </Stack>
